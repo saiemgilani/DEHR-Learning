@@ -31,9 +31,9 @@ def convert_to_3digit_icd9(dxStr):
 		else: return dxStr
 
 if __name__ == '__main__':
-	admissionFile = 'C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/ADMISSIONS.csv'
-	diagnosisFile = 'C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/DIAGNOSES_ICD.csv'
-	outFile = 'C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/output/mortality'
+	admissionFile = './DATA/ADMISSIONS.csv'
+	diagnosisFile = './DATA/DIAGNOSES_ICD.csv'
+	outFile = './DATA/output/mortality'
 
 	print ('Building pid-admission mapping, admission-date mapping')
 	pidAdmMap = {}
