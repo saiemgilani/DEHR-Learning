@@ -8,10 +8,10 @@ from sklearn.model_selection import train_test_split
 import csv
 
 DATA_PATH = './DATA/'
-PATH_TRAIN = "./DATA/TRAIN/"
-PATH_VALIDATION = "./DATA/VALIDATION/"
-PATH_TEST = "./DATA/TEST/"
-PATH_OUTPUT = "./DATA/output/"
+PATH_TRAIN = "./DATA/MORTALITY/TRAIN/"
+PATH_VALIDATION = "./DATA/MORTALITY/VALIDATION/"
+PATH_TEST = "./DATA/MORTALITY/TEST/"
+PATH_OUTPUT = "./DATA/MORTALITY/output/"
 
 
 def convert_icd9(icd9_object):
@@ -53,25 +53,25 @@ def create_train_test_split(path):
     :param transform: e.g. convert_icd9
     :return: List(patient IDs), List(labels), Visit sequence DATA as a List of List of List.
     """
-    df_mortality = pd.read_csv(os.path.join(path, "MORTALITY.csv"))
-    df_admission = pd.read_csv(os.path.join(path, "ADMISSIONS.csv"))
+    df_mortality = pd.read_csv(os.path.join(path, "Admission_MORTALITY.csv"))
+    df_admission = pd.read_csv(os.path.join(path, "Admission_MORTALITY.csv"))
     df_diagnoses = pd.read_csv(os.path.join(path, "DIAGNOSES_ICD.csv"))
 
 
-    patient_ids = list(df_mortality['SUBJECT_ID'].values)
+    patient_ids = list(df_mortality['HADM_ID'].values)
     labels = list(df_mortality['MORTALITY'].values)
 
     x_train, x_val, y_train, y_val = train_test_split(patient_ids, labels, test_size=0.10, random_state=1024)
     x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.20, random_state=1024)
-    admission_train = df_admission[df_admission.SUBJECT_ID.isin(x_train)]
-    admission_test = df_admission[df_admission.SUBJECT_ID.isin(x_test)]
-    admission_val = df_admission[df_admission.SUBJECT_ID.isin(x_val)]
-    mortality_train = df_mortality[df_mortality.SUBJECT_ID.isin(x_train)]
-    mortality_test = df_mortality[df_mortality.SUBJECT_ID.isin(x_test)]
-    mortality_val = df_mortality[df_mortality.SUBJECT_ID.isin(x_val)]   
-    diagnoses_train = df_diagnoses[df_diagnoses.SUBJECT_ID.isin(x_train)]
-    diagnoses_test = df_diagnoses[df_diagnoses.SUBJECT_ID.isin(x_test)]
-    diagnoses_val = df_diagnoses[df_diagnoses.SUBJECT_ID.isin(x_val)]
+    admission_train = df_admission[df_admission.HADM_ID.isin(x_train)]
+    admission_test = df_admission[df_admission.HADM_ID.isin(x_test)]
+    admission_val = df_admission[df_admission.HADM_ID.isin(x_val)]
+    mortality_train = df_mortality[df_mortality.HADM_ID.isin(x_train)]
+    mortality_test = df_mortality[df_mortality.HADM_ID.isin(x_test)]
+    mortality_val = df_mortality[df_mortality.HADM_ID.isin(x_val)]   
+    diagnoses_train = df_diagnoses[df_diagnoses.HADM_ID.isin(x_train)]
+    diagnoses_test = df_diagnoses[df_diagnoses.HADM_ID.isin(x_test)]
+    diagnoses_val = df_diagnoses[df_diagnoses.HADM_ID.isin(x_val)]
     admission_train.to_csv(os.path.join(PATH_TRAIN,"ADMISSIONS.csv"), sep=',',index=False,header=True)
     admission_test.to_csv(os.path.join(PATH_TEST,"ADMISSIONS.csv"), sep=',',index=False,header=True)
     admission_val.to_csv(os.path.join(PATH_VALIDATION,"ADMISSIONS.csv"), sep=',',index=False,header=True)
@@ -100,15 +100,21 @@ def create_dataset(path, codemap, transform):
     df_diagnoses = df_diagnoses[pd.notnull(df_diagnoses['ICD9_CODE'])]
     
     aggregatedByVisit = pd.DataFrame(df_diagnoses.groupby(['HADM_ID'])['featureID'].apply(list))
-    aggregatedByVisit['HADM_ID'] = aggregatedByVisit.index
 
-    df_admission = df_admission[["SUBJECT_ID", "HADM_ID", "ADMITTIME"]]
+    df_admission = df_admission[["HADM_ID","blood","circulatory","congenital","digestive","endocrine",
+"genitourinary","infectious","injury","mental","misc","muscular","neoplasms","nervous","pregnancy","prenatal",
+"respiratory","skin","GENDER","ADM_ELECTIVE","ADM_EMERGENCY","ADM_NEWBORN","ADM_URGENT","INS_Government",
+"INS_Medicaid","INS_Medicare","INS_Private","INS_Self Pay","REL_NOT SPECIFIED","REL_RELIGIOUS","REL_UNOBTAINABLE",
+"ETH_ASIAN","ETH_BLACK/AFRICAN AMERICAN","ETH_HISPANIC/LATINO","ETH_OTHER/UNKNOWN","ETH_WHITE","AGE_0-3",
+"AGE_100-300","AGE_12-18","AGE_18-36","AGE_36-54","AGE_54-65","AGE_65-89","MAR_DIVORCED","MAR_LIFE PARTNER",
+"MAR_MARRIED","MAR_SEPARATED","MAR_SINGLE","MAR_UNKNOWN (DEFAULT)","MAR_WIDOWED","MORTALITY"]]
+
     aggregatedByVisit = aggregatedByVisit.join(df_admission.set_index("HADM_ID"), how = "left")
     
-    aggregatedByPatient = pd.DataFrame(aggregatedByVisit.sort_values(['SUBJECT_ID','ADMITTIME'],ascending=True).groupby('SUBJECT_ID')['featureID'].apply(list))
-    aggregatedByPatient['SUBJECT_ID'] = aggregatedByPatient.index
+    aggregatedByPatient = pd.DataFrame(aggregatedByVisit.sort_values(['HADM_ID'],ascending=True).groupby('HADM_ID')['featureID'].apply(list))
+    aggregatedByPatient['HADM_ID'] = aggregatedByPatient.index
     
-    aggregatedByPatient = aggregatedByPatient.set_index("SUBJECT_ID").join(df_mortality.set_index("SUBJECT_ID"), how = "left")
+    aggregatedByPatient = aggregatedByPatient.join(df_mortality.set_index("HADM_ID"), how = "left")
     
     patient_ids = list(aggregatedByPatient.index.values)
     labels = list(aggregatedByPatient['MORTALITY'].values)

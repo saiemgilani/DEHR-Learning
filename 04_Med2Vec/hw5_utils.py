@@ -133,4 +133,3 @@ def make_kaggle_submission(list_id, list_prob, path):
 	for pid, prob in zip(list_id, list_prob):
 		output_file.write("{},{}\n".format(pid, prob))
 	output_file.close()
-

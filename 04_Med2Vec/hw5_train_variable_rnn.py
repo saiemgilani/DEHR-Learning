@@ -108,4 +108,3 @@ def predict_mortality(model, device, data_loader):
 test_prob = predict_mortality(best_model, device, test_loader)
 test_id = pickle.load(open(PATH_TEST_IDS, "rb"))
 make_kaggle_submission(test_id, test_prob, PATH_OUTPUT)
-
