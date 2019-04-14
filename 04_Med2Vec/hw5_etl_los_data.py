@@ -55,6 +55,8 @@ def create_train_test_split(path):
     """
     df_LOS = pd.read_csv(os.path.join(path, "Admission_LOS.csv"))
     df_admission = pd.read_csv(os.path.join(path, "Admission_LOS.csv"))
+    df_icu_los = pd.read_csv(os.path.join(path, "ICU_LOS.csv"))
+    df_icu_admission = pd.read_csv(os.path.join(path, "ICU_LOS.csv"))
     df_diagnoses = pd.read_csv(os.path.join(path, "DIAGNOSES_ICD.csv"))
 
 
@@ -69,6 +71,13 @@ def create_train_test_split(path):
     LOS_train = df_LOS[df_LOS.HADM_ID.isin(x_train)]
     LOS_test = df_LOS[df_LOS.HADM_ID.isin(x_test)]
     LOS_val = df_LOS[df_LOS.HADM_ID.isin(x_val)]   
+    icu_admission_train = df_icu_admission[df_icu_admission.HADM_ID.isin(x_train)]
+    icu_admission_test = df_icu_admission[df_icu_admission.HADM_ID.isin(x_test)]
+    icu_admission_val = df_icu_admission[df_icu_admission.HADM_ID.isin(x_val)]
+    icu_LOS_train = df_icu_LOS[df_icu_LOS.HADM_ID.isin(x_train)]
+    icu_LOS_test = df_icu_LOS[df_icu_LOS.HADM_ID.isin(x_test)]
+    icu_LOS_val = df_icu_LOS[df_icu_LOS.HADM_ID.isin(x_val)]   
+
     diagnoses_train = df_diagnoses[df_diagnoses.HADM_ID.isin(x_train)]
     diagnoses_test = df_diagnoses[df_diagnoses.HADM_ID.isin(x_test)]
     diagnoses_val = df_diagnoses[df_diagnoses.HADM_ID.isin(x_val)]
@@ -78,6 +87,12 @@ def create_train_test_split(path):
     LOS_train.to_csv(os.path.join(PATH_TRAIN,"LOS.csv"), sep=',',index=False,header=True)
     LOS_test.to_csv(os.path.join(PATH_TEST,"LOS.csv"), sep=',',index=False,header=True)
     LOS_val.to_csv(os.path.join(PATH_VALIDATION,"LOS.csv"), sep=',',index=False,header=True)
+    icu_admission_train.to_csv(os.path.join(PATH_TRAIN,"ICU_ADMISSIONS.csv"), sep=',',index=False,header=True)
+    icu_admission_test.to_csv(os.path.join(PATH_TEST,"ICU_ADMISSIONS.csv"), sep=',',index=False,header=True)
+    icu_admission_val.to_csv(os.path.join(PATH_VALIDATION,"ICU_ADMISSIONS.csv"), sep=',',index=False,header=True)
+    icu_LOS_train.to_csv(os.path.join(PATH_TRAIN,"ICU_LOS.csv"), sep=',',index=False,header=True)
+    icu_LOS_test.to_csv(os.path.join(PATH_TEST,"ICU_LOS.csv"), sep=',',index=False,header=True)
+    icu_LOS_val.to_csv(os.path.join(PATH_VALIDATION,"ICU_LOS.csv"), sep=',',index=False,header=True)
 
     diagnoses_train.to_csv(os.path.join(PATH_TRAIN,"DIAGNOSES_ICD.csv"), sep=',',index=False,header=True)
     diagnoses_test.to_csv(os.path.join(PATH_TEST,"DIAGNOSES_ICD.csv"), sep=',',index=False,header=True)
@@ -93,6 +108,8 @@ def create_dataset(path, codemap, transform):
     """
     df_LOS = pd.read_csv(os.path.join(path, "LOS.csv"))
     df_admission = pd.read_csv(os.path.join(path, "ADMISSIONS.csv"))
+    df_icu_LOS = pd.read_csv(os.path.join(path, "ICU_LOS.csv"))
+    df_icu_admission = pd.read_csv(os.path.join(path, "ICU_ADMISSIONS.csv"))   
     df_diagnoses = pd.read_csv(os.path.join(path, "DIAGNOSES_ICD.csv"))
 
     df_diagnoses['ICD9_CODE'] = df_diagnoses['ICD9_CODE'].apply(transform)
@@ -109,17 +126,42 @@ def create_dataset(path, codemap, transform):
 "AGE_100-300","AGE_12-18","AGE_18-36","AGE_36-54","AGE_54-65","AGE_65-89","MAR_DIVORCED","MAR_LIFE PARTNER",
 "MAR_MARRIED","MAR_SEPARATED","MAR_SINGLE","MAR_UNKNOWN (DEFAULT)","MAR_WIDOWED","LOS"]]
 
+df_icu_admission = df_icu_admission[["SUBJECT_ID_x",  "HADM_ID",    "blood",  
+"circulatory",    "congenital", "digestive",  "endocrine",  "genitourinary",  
+"infectious", "injury", "mental", "misc",   "muscular",   "neoplasms",  "nervous",    
+"pregnancy",  "prenatal",   "respiratory",    "skin",   "GENDER", "ADM_ELECTIVE",   
+"ADM_EMERGENCY",  "ADM_NEWBORN",    "ADM_URGENT", "INS_Government", "INS_Medicaid",   
+"INS_Medicare",   "INS_Private",    "INS_Self Pay",   "REL_NOT SPECIFIED",  "REL_RELIGIOUS",  
+"REL_UNOBTAINABLE",   "ETH_ASIAN",  "ETH_BLACK/AFRICAN AMERICAN", "ETH_HISPANIC/LATINO",    
+"ETH_OTHER/UNKNOWN",  "ETH_WHITE",  "AGE_0-3",    "AGE_100-300",    "AGE_12-18",  "AGE_18-36",  
+"AGE_36-54",  "AGE_54-65",  "AGE_65-89",  "MAR_DIVORCED",   "MAR_LIFE PARTNER",   
+"MAR_MARRIED",    "MAR_SEPARATED",  "MAR_SINGLE", "MAR_UNKNOWN (DEFAULT)",  "MAR_WIDOWED",    
+"SUBJECT_ID_y",   "OASIS",  "OASIS_PROB", "elixhauser_vanwalraven", 
+"elixhauser_SID29",   "elixhauser_SID30",   "age_score",
+"LOS"]]
     aggregatedByVisit = aggregatedByVisit.join(df_admission.set_index("HADM_ID"), how = "left")
     
     aggregatedByPatient = pd.DataFrame(aggregatedByVisit.sort_values(['HADM_ID'],ascending=True).groupby('HADM_ID')['featureID'].apply(list))
     aggregatedByPatient['HADM_ID'] = aggregatedByPatient.index
     
     aggregatedByPatient = aggregatedByPatient.join(df_LOS.set_index("HADM_ID"), how = "left")
+
+
+    aggregatedByICUVisit = aggregatedByICUVisit.join(df_icu_admission.set_index("HADM_ID"), how = "left")
+    
+    aggregatedByICUPatient = pd.DataFrame(aggregatedByICUVisit.sort_values(['HADM_ID'],ascending=True).groupby('HADM_ID')['featureID'].apply(list))
+    aggregatedByICUPatient['HADM_ID'] = aggregatedByICUPatient.index
+    
+    aggregatedByICUPatient = aggregatedByICUPatient.join(df_icu_LOS.set_index("HADM_ID"), how = "left")
     
     patient_ids = list(aggregatedByPatient.index.values)
     labels = list(aggregatedByPatient['LOS'].values)
     seq_data = list(aggregatedByPatient['featureID'].values)
-    return patient_ids, labels, seq_data
+    icu_patient_ids = list(aggregatedByICUPatient.index.values)
+    icu_labels = list(aggregatedByICUPatient['LOS'].values)
+    icu_seq_data = list(aggregatedByICUPatient['featureID'].values)
+   
+    return patient_ids, labels, seq_data, icu_patient_ids,icu_labels, icu_seq_data
 
 def main():
     # Build a code map from the train set
@@ -133,27 +175,37 @@ def main():
 
     # Train set
     print("Construct train set")
-    train_ids, train_labels, train_seqs = create_dataset(PATH_TRAIN, codemap, convert_icd9)
+    train_ids, train_labels, train_seqs,train_icu_ids,train_icu_labels,train_icu_seqs = create_dataset(PATH_TRAIN, codemap, convert_icd9)
 
     pickle.dump(train_ids, open(os.path.join(PATH_OUTPUT, "LOS.ids.train"), 'wb'), pickle.HIGHEST_PROTOCOL)
     pickle.dump(train_labels, open(os.path.join(PATH_OUTPUT, "LOS.labels.train"), 'wb'), pickle.HIGHEST_PROTOCOL)
     pickle.dump(train_seqs, open(os.path.join(PATH_OUTPUT, "LOS.seqs.train"), 'wb'), pickle.HIGHEST_PROTOCOL)
+    pickle.dump(train_icu_ids, open(os.path.join(PATH_OUTPUT, "LOS.ids.train"), 'wb'), pickle.HIGHEST_PROTOCOL)
+    pickle.dump(train_icu_labels, open(os.path.join(PATH_OUTPUT, "LOS.labels.train"), 'wb'), pickle.HIGHEST_PROTOCOL)
+    pickle.dump(train_icu_seqs, open(os.path.join(PATH_OUTPUT, "LOS.seqs.train"), 'wb'), pickle.HIGHEST_PROTOCOL)
+
 
     # Validation set
     print("Construct validation set")
-    validation_ids, validation_labels, validation_seqs = create_dataset(PATH_VALIDATION, codemap, convert_icd9)
+    validation_ids, validation_labels, validation_seqs,validation_icu_ids, validation_icu_labels, validation_icu_seqs = create_dataset(PATH_VALIDATION, codemap, convert_icd9)
 
     pickle.dump(validation_ids, open(os.path.join(PATH_OUTPUT, "LOS.ids.validation"), 'wb'), pickle.HIGHEST_PROTOCOL)
     pickle.dump(validation_labels, open(os.path.join(PATH_OUTPUT, "LOS.labels.validation"), 'wb'), pickle.HIGHEST_PROTOCOL)
     pickle.dump(validation_seqs, open(os.path.join(PATH_OUTPUT, "LOS.seqs.validation"), 'wb'), pickle.HIGHEST_PROTOCOL)
+    pickle.dump(validation_icu_ids, open(os.path.join(PATH_OUTPUT, "LOS.ids.validation"), 'wb'), pickle.HIGHEST_PROTOCOL)
+    pickle.dump(validation_icu_labels, open(os.path.join(PATH_OUTPUT, "LOS.labels.validation"), 'wb'), pickle.HIGHEST_PROTOCOL)
+    pickle.dump(validation_icu_seqs, open(os.path.join(PATH_OUTPUT, "LOS.seqs.validation"), 'wb'), pickle.HIGHEST_PROTOCOL)
 
     # Test set
     print("Construct test set")
-    test_ids, test_labels, test_seqs = create_dataset(PATH_TEST, codemap, convert_icd9)
+    test_ids, test_labels, test_seqs,test_icu_ids, test_icu_labels, test_icu_seqs = create_dataset(PATH_TEST, codemap, convert_icd9)
 
     pickle.dump(test_ids, open(os.path.join(PATH_OUTPUT, "LOS.ids.test"), 'wb'), pickle.HIGHEST_PROTOCOL)
     pickle.dump(test_labels, open(os.path.join(PATH_OUTPUT, "LOS.labels.test"), 'wb'), pickle.HIGHEST_PROTOCOL)
     pickle.dump(test_seqs, open(os.path.join(PATH_OUTPUT, "LOS.seqs.test"), 'wb'), pickle.HIGHEST_PROTOCOL)
+    pickle.dump(test_icu_ids, open(os.path.join(PATH_OUTPUT, "LOS.ids.test"), 'wb'), pickle.HIGHEST_PROTOCOL)
+    pickle.dump(test_icu_labels, open(os.path.join(PATH_OUTPUT, "LOS.labels.test"), 'wb'), pickle.HIGHEST_PROTOCOL)
+    pickle.dump(test_icu_seqs, open(os.path.join(PATH_OUTPUT, "LOS.seqs.test"), 'wb'), pickle.HIGHEST_PROTOCOL)
 
     print("Complete!")
 
