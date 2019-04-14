@@ -4,11 +4,14 @@ import pandas as pd
 import io
 import numpy as np
 from datetime import datetime
+from sklearn.model_selection import train_test_split
+import csv
 
-PATH_TRAIN = "C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/"
-PATH_VALIDATION = "C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/"
-PATH_TEST = "C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/"
-PATH_OUTPUT = "C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/output"
+DATA_PATH = './DATA/'
+PATH_TRAIN = "./DATA/TRAIN/"
+PATH_VALIDATION = "./DATA/VALIDATION/"
+PATH_TEST = "./DATA/TEST/"
+PATH_OUTPUT = "./DATA/output/"
 
 
 def convert_icd9(icd9_object):
@@ -30,7 +33,7 @@ def build_codemap(df_icd9, transform):
     """
     :return: Dict of code map {main-digits of ICD9: unique feature ID}
     """
-    # TODO: We build a code map using ONLY train data. Think about how to construct validation/test sets using this.
+    # TODO: We build a code map using ONLY train DATA. Think about how to construct validation/test sets using this.
     df_digits = df_icd9['ICD9_CODE'].apply(transform)
     
     codemap = {}
@@ -43,12 +46,50 @@ def build_codemap(df_icd9, transform):
     return codemap
 
 
+def create_train_test_split(path):
+    """
+    :param path: path to the directory contains raw files.
+    :param codemap: 3-digit ICD-9 code feature map
+    :param transform: e.g. convert_icd9
+    :return: List(patient IDs), List(labels), Visit sequence DATA as a List of List of List.
+    """
+    df_mortality = pd.read_csv(os.path.join(path, "MORTALITY.csv"))
+    df_admission = pd.read_csv(os.path.join(path, "ADMISSIONS.csv"))
+    df_diagnoses = pd.read_csv(os.path.join(path, "DIAGNOSES_ICD.csv"))
+
+
+    patient_ids = list(df_mortality['SUBJECT_ID'].values)
+    labels = list(df_mortality['MORTALITY'].values)
+
+    x_train, x_val, y_train, y_val = train_test_split(patient_ids, labels, test_size=0.10, random_state=1024)
+    x_train, x_test, y_train, y_test = train_test_split(x_train, y_train, test_size=0.20, random_state=1024)
+    admission_train = df_admission[df_admission.SUBJECT_ID.isin(x_train)]
+    admission_test = df_admission[df_admission.SUBJECT_ID.isin(x_test)]
+    admission_val = df_admission[df_admission.SUBJECT_ID.isin(x_val)]
+    mortality_train = df_mortality[df_mortality.SUBJECT_ID.isin(x_train)]
+    mortality_test = df_mortality[df_mortality.SUBJECT_ID.isin(x_test)]
+    mortality_val = df_mortality[df_mortality.SUBJECT_ID.isin(x_val)]   
+    diagnoses_train = df_diagnoses[df_diagnoses.SUBJECT_ID.isin(x_train)]
+    diagnoses_test = df_diagnoses[df_diagnoses.SUBJECT_ID.isin(x_test)]
+    diagnoses_val = df_diagnoses[df_diagnoses.SUBJECT_ID.isin(x_val)]
+    admission_train.to_csv(os.path.join(PATH_TRAIN,"ADMISSIONS.csv"), sep=',',index=False,header=True)
+    admission_test.to_csv(os.path.join(PATH_TEST,"ADMISSIONS.csv"), sep=',',index=False,header=True)
+    admission_val.to_csv(os.path.join(PATH_VALIDATION,"ADMISSIONS.csv"), sep=',',index=False,header=True)
+    mortality_train.to_csv(os.path.join(PATH_TRAIN,"MORTALITY.csv"), sep=',',index=False,header=True)
+    mortality_test.to_csv(os.path.join(PATH_TEST,"MORTALITY.csv"), sep=',',index=False,header=True)
+    mortality_val.to_csv(os.path.join(PATH_VALIDATION,"MORTALITY.csv"), sep=',',index=False,header=True)
+
+    diagnoses_train.to_csv(os.path.join(PATH_TRAIN,"DIAGNOSES_ICD.csv"), sep=',',index=False,header=True)
+    diagnoses_test.to_csv(os.path.join(PATH_TEST,"DIAGNOSES_ICD.csv"), sep=',',index=False,header=True)
+    diagnoses_val.to_csv(os.path.join(PATH_VALIDATION,"DIAGNOSES_ICD.csv"), sep=',',index=False,header=True)
+    
+
 def create_dataset(path, codemap, transform):
     """
     :param path: path to the directory contains raw files.
     :param codemap: 3-digit ICD-9 code feature map
     :param transform: e.g. convert_icd9
-    :return: List(patient IDs), List(labels), Visit sequence data as a List of List of List.
+    :return: List(patient IDs), List(labels), Visit sequence DATA as a List of List of List.
     """
     df_mortality = pd.read_csv(os.path.join(path, "MORTALITY.csv"))
     df_admission = pd.read_csv(os.path.join(path, "ADMISSIONS.csv"))
@@ -76,8 +117,10 @@ def create_dataset(path, codemap, transform):
 
 def main():
     # Build a code map from the train set
+    print("Create Train (72%), Test(18%), Validation(10%)")
+    create_train_test_split(DATA_PATH)
     print("Build feature id map")
-    df_icd9 = pd.read_csv(os.path.join(PATH_TRAIN, "DIAGNOSES_ICD.csv"), usecols=["ICD9_CODE"])
+    df_icd9 = pd.read_csv(os.path.join(PATH_TRAIN, "DIAGNOSES_ICD.csv"))
     codemap = build_codemap(df_icd9, convert_icd9)
     os.makedirs(PATH_OUTPUT, exist_ok=True)
     pickle.dump(codemap, open(os.path.join(PATH_OUTPUT, "mortality.codemap.train"), 'wb'), pickle.HIGHEST_PROTOCOL)

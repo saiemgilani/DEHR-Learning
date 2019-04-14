@@ -2,7 +2,7 @@
 # Code written by Edward Choi (mp2893@gatech.edu)
 # For bug report, please contact author using the email address
 #################################################################
-#python med2vec.py ./output/mortality.seqs 4894 ./output/mortality/ --label_file ./output/mortality.3digitICD9.seqs --n_output_codes 942
+#python ./04_Med2Vec/m2v_med2vec.py ./data/output/mortality.seqs 6959 ./data/output/mortality --label_file ./data/output/mortality.3digitICD9.seqs --n_output_codes 1070
 import sys, random
 import numpy as np
 import  pickle
@@ -220,7 +220,7 @@ def train_med2vec(seqFile='seqFile.txt',
 				logEps=1e-8,
 				windowSize=1,
 				verbose=False,
-				maxEpochs=100):
+				maxEpochs=1000):
 
 	options = locals().copy()
 	print ('initializing parameters')

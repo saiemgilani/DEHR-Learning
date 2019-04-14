@@ -6,24 +6,24 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 import torch.optim as optim
 
-from utils import train, evaluate, make_kaggle_submission
-from plots import plot_learning_curves, plot_confusion_matrix
-from mydatasets import calculate_num_features, VisitSequenceWithLabelDataset, visit_collate_fn
-from mymodels import MyVariableRNN
+from hw5_utils import train, evaluate, make_kaggle_submission
+from hw5_plots import plot_learning_curves, plot_confusion_matrix
+from hw5_mydatasets import calculate_num_features, VisitSequenceWithLabelDataset, visit_collate_fn
+from hw5_mymodels import MyVariableRNN
 
 torch.manual_seed(0)
 if torch.cuda.is_available():
 	torch.cuda.manual_seed(0)
 
 # Set a correct path to the data files that you preprocessed
-PATH_TRAIN_SEQS = "C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/output/mortality.seqs.train"
-PATH_TRAIN_LABELS = "C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/output/mortality.labels.train"
-PATH_VALID_SEQS = "C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/output/mortality.seqs.validation"
-PATH_VALID_LABELS = "C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/output/mortality.labels.validation"
-PATH_TEST_SEQS = "C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/output/mortality.seqs.test"
-PATH_TEST_LABELS = "C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/output/mortality.labels.test"
-PATH_TEST_IDS = "C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/output/mortality.ids.test"
-PATH_OUTPUT = "C:/Users/saiem/Documents/mimic-code-data-1.4.1/clean/output/mortality/"
+PATH_TRAIN_SEQS = "./DATA/output/mortality.seqs.train"
+PATH_TRAIN_LABELS = "./DATA/output/mortality.labels.train"
+PATH_VALID_SEQS = "./DATA/output/mortality.seqs.validation"
+PATH_VALID_LABELS = "./DATA/output/mortality.labels.validation"
+PATH_TEST_SEQS = "./DATA/output/mortality.seqs.test"
+PATH_TEST_LABELS = "./DATA/output/mortality.labels.test"
+PATH_TEST_IDS = "./DATA/output/mortality.ids.test"
+PATH_OUTPUT = "./DATA/output/mortality"
 os.makedirs(PATH_OUTPUT, exist_ok=True)
 
 NUM_EPOCHS = 12
