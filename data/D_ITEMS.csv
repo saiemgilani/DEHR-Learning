@@ -1,4 +1,5 @@
-﻿27,1,% Inspir. Time,,carevue,chartevents,,,,
+﻿ROW_ID,ITEMID,LABEL,ABBREVIATION,DBSOURCE,LINKSTO,CATEGORY,UNITNAME,PARAM_TYPE,CONCEPTID
+27,1,% Inspir. Time,,carevue,chartevents,,,,
 28,2,ABI (L),,carevue,chartevents,,,,
 29,3,ABI (R),,carevue,chartevents,,,,
 30,4,ABI Ankle BP [Right],,carevue,chartevents,,,,
