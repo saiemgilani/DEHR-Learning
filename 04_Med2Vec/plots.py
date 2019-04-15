@@ -4,8 +4,10 @@ import numpy as np
 import pandas as pd
 import itertools
 from sklearn.metrics import confusion_matrix
+import os
 
-def plot_learning_curves(train_losses, valid_losses, train_accuracies, valid_accuracies):
+
+def plot_learning_curves(train_losses, valid_losses, train_accuracies, valid_accuracies,path):
     # TODO: Make plots for loss curves and accuracy curves.
     # TODO: You do not have to return the plots.
     # TODO: You can save plots as files by codes here or an interactive way according to your preference.
@@ -18,17 +20,17 @@ def plot_learning_curves(train_losses, valid_losses, train_accuracies, valid_acc
     plt.plot( 'Epochs', 'Training Loss', data=df, marker='', color='skyblue', linewidth=4)
     plt.plot( 'Epochs', 'Validation Loss', data=df, marker='', color='olive', linewidth=2)
     plt.legend()
-    f.savefig("../output/seizure/Learning_Curve.png")
+    f.savefig(os.path.join(path,"Learning_Curve.png"))
     
     g = plt.figure(2)    
 
     plt.plot('Epochs', 'Training Accuracy', data = df2, marker = '',  color='blue', linewidth=4)
     plt.plot('Epochs', 'Validation Accuracy', data=df2, marker = '',  color='green', linewidth=2)
     plt.legend()
-    g.savefig("../output/seizure/Accuracy_Curve.png")
+    g.savefig(os.path.join(path,"Accuracy_Curve.png"))
 
 
-def plot_confusion_matrix(results, class_names):
+def plot_confusion_matrix(results, class_names,path):
     # TODO: Make a confusion matrix plot.
     # TODO: You do not have to return the plots.
     # TODO: You can save plots as files by codes here or an interactive way according to your preference.
@@ -57,4 +59,4 @@ def plot_confusion_matrix(results, class_names):
     plt.xlabel('Predicted')
     plt.subplots_adjust(bottom=0.4)
 
-    h.savefig("../output/seizure/Confusion_Matrix.png")
+    h.savefig(os.path.join(path,"Confusion_Matrix.png"))

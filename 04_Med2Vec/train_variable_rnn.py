@@ -6,10 +6,10 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 import torch.optim as optim
 
-from hw5_utils import train, evaluate, make_kaggle_submission
-from hw5_plots import plot_learning_curves, plot_confusion_matrix
-from hw5_mydatasets import calculate_num_features, VisitSequenceWithLabelDataset, visit_collate_fn
-from hw5_mymodels import MyVariableRNN
+from utils import train, evaluate, make_kaggle_submission
+from plots import plot_learning_curves, plot_confusion_matrix
+from mydatasets import calculate_num_features, VisitSequenceWithLabelDataset, visit_collate_fn
+from mymodels import MyVariableRNN
 
 torch.manual_seed(0)
 if torch.cuda.is_available():
@@ -76,6 +76,8 @@ for epoch in range(NUM_EPOCHS):
     if is_best:
         best_val_acc = valid_accuracy
         torch.save(model, os.path.join(PATH_OUTPUT, "MyVariableRNN.pth"))
+
+plot_learning_curves(train_losses, valid_losses, train_accuracies, valid_accuracies,PATH_OUTPUT)
 
 best_model = torch.load(os.path.join(PATH_OUTPUT, "MyVariableRNN.pth"))
 # TODO: For your report, try to make plots similar to those in the previous task.
