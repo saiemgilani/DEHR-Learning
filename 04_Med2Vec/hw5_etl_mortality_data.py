@@ -139,17 +139,15 @@ def create_dataset(path, codemap, transform):
     "OASIS",  "OASIS_PROB", "elixhauser_vanwalraven", 
     "elixhauser_SID29",   "elixhauser_SID30",   "age_score",  "MORTALITY"]]
     aggregatedByVisit = aggregatedByVisit.join(df_admission.set_index("HADM_ID"), how = "left")
-    aggregatedByVisit['HADM_ID'] = aggregatedByVisit.index
     
     aggregatedByPatient = pd.DataFrame(aggregatedByVisit.sort_values(['HADM_ID'],ascending=True).groupby('HADM_ID')['featureID'].apply(list))
     aggregatedByPatient['HADM_ID'] = aggregatedByPatient.index
-    
+
     aggregatedByPatient = aggregatedByPatient.join(df_MORTALITY.set_index("HADM_ID"), how = "left")
 
     aggregatedByICUVisit = pd.DataFrame(df_diagnoses.groupby(['HADM_ID'])['featureID'].apply(list))
 
     aggregatedByICUVisit = aggregatedByICUVisit.join(df_icu_admission.set_index("HADM_ID"), how = "left")
-    aggregatedByICUVisit['HADM_ID'] = aggregatedByICUVisit.index
 
     aggregatedByICUPatient = pd.DataFrame(aggregatedByICUVisit.sort_values(['HADM_ID'],ascending=True).groupby('HADM_ID')['featureID'].apply(list))
     aggregatedByICUPatient['HADM_ID'] = aggregatedByICUPatient.index
