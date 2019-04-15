@@ -142,6 +142,6 @@ def visit_collate_fn(batch):
     seq_tensor = torch.from_numpy(np.stack(sorted_padded_seqs, axis=0)).float()
     lengths_tensor = torch.LongTensor(sorted_lengths)
 
-    labels_tensor = torch.LongTensor(sorted_labels)
+    labels_tensor = torch.LongTensor( np.nan_to_num(sorted_labels))
     
     return (seq_tensor, lengths_tensor), labels_tensor

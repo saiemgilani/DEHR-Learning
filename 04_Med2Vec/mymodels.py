@@ -79,3 +79,24 @@ class MyVariableRNN(nn.Module):
         out = self.fc2(padded_out)
         out = out[:,:,-1]
         return out
+
+class MyVariableRNN_LOS(nn.Module):
+    def __init__(self, dim_input):
+        super(MyVariableRNN_LOS, self).__init__()
+        # You may use the input argument 'dim_input', which is basically the number of features
+        self.fc1 = nn.Linear(in_features=dim_input, out_features=32)
+        self.rnn = nn.GRU(input_size=32, hidden_size=16, num_layers=1, batch_first=True)
+        self.fc2 = nn.Linear(in_features=16, out_features=2)
+        
+    def forward(self, input_tuple):
+        # HINT: Following two methods might be useful
+        # 'pack_padded_sequence' and 'pad_packed_sequence' from torch.nn.utils.rnn
+        seqs, lengths = input_tuple
+        seqs = torch.tanh(self.fc1(seqs))
+        packed_in = pack_padded_sequence(seqs, lengths, batch_first= True)
+        rnn_output, h = self.rnn(packed_in)
+        padded_out, j = pad_packed_sequence(rnn_output,batch_first = True)
+        padded_out= padded_out.contiguous()
+        out = self.fc2(padded_out)
+        out = out[:,:,-1]
+        return out

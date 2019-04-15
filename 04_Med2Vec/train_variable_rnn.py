@@ -27,7 +27,7 @@ PATH_OUTPUT = "./DATA/final_output/mortality"
 os.makedirs(PATH_OUTPUT, exist_ok=True)
 
 NUM_EPOCHS = 12
-BATCH_SIZE = 32
+BATCH_SIZE = 128
 USE_CUDA = True  # Set 'True' if you want to use GPU
 NUM_WORKERS = 0
 
