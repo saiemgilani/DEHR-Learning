@@ -26,7 +26,7 @@ PATH_TEST_IDS = "./DATA/mortality/output/mortality.ids.test"
 PATH_OUTPUT = "./DATA/final_output/mortality"
 os.makedirs(PATH_OUTPUT, exist_ok=True)
 
-NUM_EPOCHS = 1
+NUM_EPOCHS = 12
 BATCH_SIZE = 32
 USE_CUDA = True  # Set 'True' if you want to use GPU
 NUM_WORKERS = 0
