@@ -16,19 +16,19 @@ if torch.cuda.is_available():
 	torch.cuda.manual_seed(0)
 
 # Set a correct path to the data files that you preprocessed
-PATH_TRAIN_SEQS = "./DATA/output/mortality.seqs.train"
-PATH_TRAIN_LABELS = "./DATA/output/mortality.labels.train"
-PATH_VALID_SEQS = "./DATA/output/mortality.seqs.validation"
-PATH_VALID_LABELS = "./DATA/output/mortality.labels.validation"
-PATH_TEST_SEQS = "./DATA/output/mortality.seqs.test"
-PATH_TEST_LABELS = "./DATA/output/mortality.labels.test"
-PATH_TEST_IDS = "./DATA/output/mortality.ids.test"
-PATH_OUTPUT = "./DATA/output/mortality"
+PATH_TRAIN_SEQS = "./DATA/mortality/output/mortality.seqs.train"
+PATH_TRAIN_LABELS = "./DATA/mortality/output/mortality.labels.train"
+PATH_VALID_SEQS = "./DATA/mortality/output/mortality.seqs.validation"
+PATH_VALID_LABELS = "./DATA/mortality/output/mortality.labels.validation"
+PATH_TEST_SEQS = "./DATA/mortality/output/mortality.seqs.test"
+PATH_TEST_LABELS = "./DATA/mortality/output/mortality.labels.test"
+PATH_TEST_IDS = "./DATA/mortality/output/mortality.ids.test"
+PATH_OUTPUT = "./DATA/final_output/mortality"
 os.makedirs(PATH_OUTPUT, exist_ok=True)
 
-NUM_EPOCHS = 12
+NUM_EPOCHS = 1
 BATCH_SIZE = 32
-USE_CUDA = False  # Set 'True' if you want to use GPU
+USE_CUDA = True  # Set 'True' if you want to use GPU
 NUM_WORKERS = 0
 
 # Data loading
@@ -98,8 +98,8 @@ def predict_mortality(model, device, data_loader):
 
             output = model(input)
             output2 = nn.Softmax()(output)
-            output3 = output2.numpy()
-            probas.append(output3[0][1])
+            output3 = output2.cpu().numpy()
+            probas.append(output3)
 
 
     return probas
@@ -108,3 +108,4 @@ def predict_mortality(model, device, data_loader):
 test_prob = predict_mortality(best_model, device, test_loader)
 test_id = pickle.load(open(PATH_TEST_IDS, "rb"))
 make_kaggle_submission(test_id, test_prob, PATH_OUTPUT)
+

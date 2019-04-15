@@ -117,8 +117,8 @@ def create_dataset(path, codemap, transform):
     df_diagnoses = df_diagnoses[pd.notnull(df_diagnoses['ICD9_CODE'])]
     
     aggregatedByVisit = pd.DataFrame(df_diagnoses.groupby(['HADM_ID'])['featureID'].apply(list))
-
-    df_admission = df_admission[["HADM_ID","blood","circulatory","congenital","digestive","endocrine",
+    aggregatedByVisit['HADM_ID'] = aggregatedByVisit.index
+    df_admission = df_admission[["SUBJECT_ID", "HADM_ID","blood","circulatory","congenital","digestive","endocrine",
     "genitourinary","infectious","injury","mental","misc","muscular","neoplasms","nervous","pregnancy","prenatal",
     "respiratory","skin","GENDER","ADM_ELECTIVE","ADM_EMERGENCY","ADM_NEWBORN","ADM_URGENT","INS_Government",
     "INS_Medicaid","INS_Medicare","INS_Private","INS_Self Pay","REL_NOT SPECIFIED","REL_RELIGIOUS","REL_UNOBTAINABLE",
@@ -126,12 +126,11 @@ def create_dataset(path, codemap, transform):
     "AGE_100-300","AGE_12-18","AGE_18-36","AGE_36-54","AGE_54-65","AGE_65-89","MAR_DIVORCED","MAR_LIFE PARTNER",
     "MAR_MARRIED","MAR_SEPARATED","MAR_SINGLE","MAR_UNKNOWN (DEFAULT)","MAR_WIDOWED","MORTALITY"]]
 
-    df_icu_admission = df_icu_admission[["SUBJECT_ID",  "HADM_ID",    "blood",  
-    "circulatory",    "congenital", "digestive",  "endocrine",  "genitourinary",  
-    "infectious", "injury", "mental", "misc",   "muscular",   "neoplasms",  "nervous",    
-    "pregnancy",  "prenatal",   "respiratory",    "skin",   "GENDER", "ADM_ELECTIVE",   
-    "ADM_EMERGENCY",  "ADM_NEWBORN",    "ADM_URGENT", "INS_Government", "INS_Medicaid",   
-    "INS_Medicare",   "INS_Private",    "INS_Self Pay",   "REL_NOT SPECIFIED",  "REL_RELIGIOUS",  
+    df_icu_admission = df_icu_admission[["SUBJECT_ID","HADM_ID", "blood",  "circulatory", "congenital", 
+    "digestive",  "endocrine",  "genitourinary", "infectious", "injury", "mental", "misc",   
+    "muscular",   "neoplasms",  "nervous","pregnancy",  "prenatal", "respiratory", "skin",   
+    "GENDER", "ADM_ELECTIVE", "ADM_EMERGENCY",  "ADM_NEWBORN",    "ADM_URGENT", "INS_Government", 
+    "INS_Medicaid","INS_Medicare","INS_Private","INS_Self Pay","REL_NOT SPECIFIED",  "REL_RELIGIOUS",  
     "REL_UNOBTAINABLE",   "ETH_ASIAN",  "ETH_BLACK/AFRICAN AMERICAN", "ETH_HISPANIC/LATINO",    
     "ETH_OTHER/UNKNOWN",  "ETH_WHITE",  "AGE_0-3",    "AGE_100-300",    "AGE_12-18",  "AGE_18-36",  
     "AGE_36-54",  "AGE_54-65",  "AGE_65-89",  "MAR_DIVORCED",   "MAR_LIFE PARTNER",   
@@ -140,19 +139,19 @@ def create_dataset(path, codemap, transform):
     "elixhauser_SID29",   "elixhauser_SID30",   "age_score",  "MORTALITY"]]
     aggregatedByVisit = aggregatedByVisit.join(df_admission.set_index("HADM_ID"), how = "left")
     
-    aggregatedByPatient = pd.DataFrame(aggregatedByVisit.sort_values(['HADM_ID'],ascending=True).groupby('HADM_ID')['featureID'].apply(list))
-    aggregatedByPatient['HADM_ID'] = aggregatedByPatient.index
+    aggregatedByPatient = pd.DataFrame(aggregatedByVisit.sort_values(['SUBJECT_ID'],ascending=True).groupby('SUBJECT_ID')['featureID'].apply(list))
+    aggregatedByPatient['SUBJECT_ID'] = aggregatedByPatient.index
 
-    aggregatedByPatient = aggregatedByPatient.join(df_MORTALITY.set_index("HADM_ID"), how = "left")
+    aggregatedByPatient = aggregatedByPatient.set_index("SUBJECT_ID").join(df_MORTALITY.set_index("SUBJECT_ID"), how = "left")
 
     aggregatedByICUVisit = pd.DataFrame(df_diagnoses.groupby(['HADM_ID'])['featureID'].apply(list))
 
     aggregatedByICUVisit = aggregatedByICUVisit.join(df_icu_admission.set_index("HADM_ID"), how = "left")
 
-    aggregatedByICUPatient = pd.DataFrame(aggregatedByICUVisit.sort_values(['HADM_ID'],ascending=True).groupby('HADM_ID')['featureID'].apply(list))
-    aggregatedByICUPatient['HADM_ID'] = aggregatedByICUPatient.index
+    aggregatedByICUPatient = pd.DataFrame(aggregatedByICUVisit.sort_values(['SUBJECT_ID','HADM_ID'],ascending=True).groupby('SUBJECT_ID')['featureID'].apply(list))
+    aggregatedByICUPatient['SUBJECT_ID'] = aggregatedByICUPatient.index
     
-    aggregatedByICUPatient = aggregatedByICUPatient.join(df_icu_mortality.set_index("HADM_ID"), how = "left")
+    aggregatedByICUPatient = aggregatedByICUPatient.set_index("SUBJECT_ID").join(df_icu_mortality.set_index("SUBJECT_ID"), how = "left")
     
     patient_ids = list(aggregatedByPatient.index.values)
     labels = list(aggregatedByPatient['MORTALITY'].values)
@@ -176,7 +175,12 @@ def main():
     # Train set
     print("Construct train set")
     train_ids, train_labels, train_seqs,train_icu_ids,train_icu_labels,train_icu_seqs = create_dataset(PATH_TRAIN, codemap, convert_icd9)
-
+    print("train_ids",len(train_ids))
+    print( "train_labels",len(train_labels))
+    print( "train_seqs", len(train_seqs))
+    print("train_icu_ids",len(train_icu_ids))
+    print("train_icu_labels",len(train_icu_labels))
+    print("train_icu_seqs",len(train_icu_seqs))
     pickle.dump(train_ids, open(os.path.join(PATH_OUTPUT, "MORTALITY.ids.train"), 'wb'), pickle.HIGHEST_PROTOCOL)
     pickle.dump(train_labels, open(os.path.join(PATH_OUTPUT, "MORTALITY.labels.train"), 'wb'), pickle.HIGHEST_PROTOCOL)
     pickle.dump(train_seqs, open(os.path.join(PATH_OUTPUT, "MORTALITY.seqs.train"), 'wb'), pickle.HIGHEST_PROTOCOL)
@@ -188,7 +192,12 @@ def main():
     # Validation set
     print("Construct validation set")
     validation_ids, validation_labels, validation_seqs,validation_icu_ids, validation_icu_labels, validation_icu_seqs = create_dataset(PATH_VALIDATION, codemap, convert_icd9)
-
+    print("validation_ids",len(validation_ids))
+    print( "validation_labels",len(validation_labels))
+    print( "validation_seqs", len(validation_seqs))
+    print("validation_icu_ids",len(validation_icu_ids))
+    print("validation_icu_labels",len(validation_icu_labels))
+    print("validation_icu_seqs",len(validation_icu_seqs))
     pickle.dump(validation_ids, open(os.path.join(PATH_OUTPUT, "MORTALITY.ids.validation"), 'wb'), pickle.HIGHEST_PROTOCOL)
     pickle.dump(validation_labels, open(os.path.join(PATH_OUTPUT, "MORTALITY.labels.validation"), 'wb'), pickle.HIGHEST_PROTOCOL)
     pickle.dump(validation_seqs, open(os.path.join(PATH_OUTPUT, "MORTALITY.seqs.validation"), 'wb'), pickle.HIGHEST_PROTOCOL)
@@ -199,7 +208,12 @@ def main():
     # Test set
     print("Construct test set")
     test_ids, test_labels, test_seqs,test_icu_ids, test_icu_labels, test_icu_seqs = create_dataset(PATH_TEST, codemap, convert_icd9)
-
+    print("test_ids",len(test_ids))
+    print( "test_labels",len(test_labels))
+    print( "test_seqs", len(test_seqs))
+    print("test_icu_ids",len(test_icu_ids))
+    print("test_icu_labels",len(test_icu_labels))
+    print("test_icu_seqs",len(test_icu_seqs))
     pickle.dump(test_ids, open(os.path.join(PATH_OUTPUT, "MORTALITY.ids.test"), 'wb'), pickle.HIGHEST_PROTOCOL)
     pickle.dump(test_labels, open(os.path.join(PATH_OUTPUT, "MORTALITY.labels.test"), 'wb'), pickle.HIGHEST_PROTOCOL)
     pickle.dump(test_seqs, open(os.path.join(PATH_OUTPUT, "MORTALITY.seqs.test"), 'wb'), pickle.HIGHEST_PROTOCOL)
