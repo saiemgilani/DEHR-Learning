@@ -55,7 +55,7 @@ def create_train_test_split(path):
     """
     df_MORTALITY = pd.read_csv(os.path.join(path, "Admission_MORTALITY.csv"))
     df_admission = pd.read_csv(os.path.join(path, "Admission_MORTALITY.csv"))
-    df_icu_los = pd.read_csv(os.path.join(path, "ICU_MORTALITY.csv"))
+    df_icu_mortality = pd.read_csv(os.path.join(path, "ICU_MORTALITY.csv"))
     df_icu_admission = pd.read_csv(os.path.join(path, "ICU_MORTALITY.csv"))
     df_diagnoses = pd.read_csv(os.path.join(path, "DIAGNOSES_ICD.csv"))
 
@@ -74,9 +74,9 @@ def create_train_test_split(path):
     icu_admission_train = df_icu_admission[df_icu_admission.HADM_ID.isin(x_train)]
     icu_admission_test = df_icu_admission[df_icu_admission.HADM_ID.isin(x_test)]
     icu_admission_val = df_icu_admission[df_icu_admission.HADM_ID.isin(x_val)]
-    icu_MORTALITY_train = df_icu_MORTALITY[df_icu_MORTALITY.HADM_ID.isin(x_train)]
-    icu_MORTALITY_test = df_icu_MORTALITY[df_icu_MORTALITY.HADM_ID.isin(x_test)]
-    icu_MORTALITY_val = df_icu_MORTALITY[df_icu_MORTALITY.HADM_ID.isin(x_val)]   
+    icu_mortality_train = df_icu_mortality[df_icu_mortality.HADM_ID.isin(x_train)]
+    icu_mortality_test = df_icu_mortality[df_icu_mortality.HADM_ID.isin(x_test)]
+    icu_mortality_val = df_icu_mortality[df_icu_mortality.HADM_ID.isin(x_val)]   
 
     diagnoses_train = df_diagnoses[df_diagnoses.HADM_ID.isin(x_train)]
     diagnoses_test = df_diagnoses[df_diagnoses.HADM_ID.isin(x_test)]
@@ -90,9 +90,9 @@ def create_train_test_split(path):
     icu_admission_train.to_csv(os.path.join(PATH_TRAIN,"ICU_ADMISSIONS.csv"), sep=',',index=False,header=True)
     icu_admission_test.to_csv(os.path.join(PATH_TEST,"ICU_ADMISSIONS.csv"), sep=',',index=False,header=True)
     icu_admission_val.to_csv(os.path.join(PATH_VALIDATION,"ICU_ADMISSIONS.csv"), sep=',',index=False,header=True)
-    icu_MORTALITY_train.to_csv(os.path.join(PATH_TRAIN,"ICU_MORTALITY.csv"), sep=',',index=False,header=True)
-    icu_MORTALITY_test.to_csv(os.path.join(PATH_TEST,"ICU_MORTALITY.csv"), sep=',',index=False,header=True)
-    icu_MORTALITY_val.to_csv(os.path.join(PATH_VALIDATION,"ICU_MORTALITY.csv"), sep=',',index=False,header=True)
+    icu_mortality_train.to_csv(os.path.join(PATH_TRAIN,"ICU_MORTALITY.csv"), sep=',',index=False,header=True)
+    icu_mortality_test.to_csv(os.path.join(PATH_TEST,"ICU_MORTALITY.csv"), sep=',',index=False,header=True)
+    icu_mortality_val.to_csv(os.path.join(PATH_VALIDATION,"ICU_MORTALITY.csv"), sep=',',index=False,header=True)
 
     diagnoses_train.to_csv(os.path.join(PATH_TRAIN,"DIAGNOSES_ICD.csv"), sep=',',index=False,header=True)
     diagnoses_test.to_csv(os.path.join(PATH_TEST,"DIAGNOSES_ICD.csv"), sep=',',index=False,header=True)
@@ -108,7 +108,7 @@ def create_dataset(path, codemap, transform):
     """
     df_MORTALITY = pd.read_csv(os.path.join(path, "MORTALITY.csv"))
     df_admission = pd.read_csv(os.path.join(path, "ADMISSIONS.csv"))
-    df_icu_MORTALITY = pd.read_csv(os.path.join(path, "ICU_MORTALITY.csv"))
+    df_icu_mortality = pd.read_csv(os.path.join(path, "ICU_MORTALITY.csv"))
     df_icu_admission = pd.read_csv(os.path.join(path, "ICU_ADMISSIONS.csv"))   
     df_diagnoses = pd.read_csv(os.path.join(path, "DIAGNOSES_ICD.csv"))
 
@@ -119,40 +119,42 @@ def create_dataset(path, codemap, transform):
     aggregatedByVisit = pd.DataFrame(df_diagnoses.groupby(['HADM_ID'])['featureID'].apply(list))
 
     df_admission = df_admission[["HADM_ID","blood","circulatory","congenital","digestive","endocrine",
-"genitourinary","infectious","injury","mental","misc","muscular","neoplasms","nervous","pregnancy","prenatal",
-"respiratory","skin","GENDER","ADM_ELECTIVE","ADM_EMERGENCY","ADM_NEWBORN","ADM_URGENT","INS_Government",
-"INS_Medicaid","INS_Medicare","INS_Private","INS_Self Pay","REL_NOT SPECIFIED","REL_RELIGIOUS","REL_UNOBTAINABLE",
-"ETH_ASIAN","ETH_BLACK/AFRICAN AMERICAN","ETH_HISPANIC/LATINO","ETH_OTHER/UNKNOWN","ETH_WHITE","AGE_0-3",
-"AGE_100-300","AGE_12-18","AGE_18-36","AGE_36-54","AGE_54-65","AGE_65-89","MAR_DIVORCED","MAR_LIFE PARTNER",
-"MAR_MARRIED","MAR_SEPARATED","MAR_SINGLE","MAR_UNKNOWN (DEFAULT)","MAR_WIDOWED","MORTALITY"]]
+    "genitourinary","infectious","injury","mental","misc","muscular","neoplasms","nervous","pregnancy","prenatal",
+    "respiratory","skin","GENDER","ADM_ELECTIVE","ADM_EMERGENCY","ADM_NEWBORN","ADM_URGENT","INS_Government",
+    "INS_Medicaid","INS_Medicare","INS_Private","INS_Self Pay","REL_NOT SPECIFIED","REL_RELIGIOUS","REL_UNOBTAINABLE",
+    "ETH_ASIAN","ETH_BLACK/AFRICAN AMERICAN","ETH_HISPANIC/LATINO","ETH_OTHER/UNKNOWN","ETH_WHITE","AGE_0-3",
+    "AGE_100-300","AGE_12-18","AGE_18-36","AGE_36-54","AGE_54-65","AGE_65-89","MAR_DIVORCED","MAR_LIFE PARTNER",
+    "MAR_MARRIED","MAR_SEPARATED","MAR_SINGLE","MAR_UNKNOWN (DEFAULT)","MAR_WIDOWED","MORTALITY"]]
 
-df_icu_admission = df_icu_admission[["SUBJECT_ID_x",  "HADM_ID",    "blood",  
-"circulatory",    "congenital", "digestive",  "endocrine",  "genitourinary",  
-"infectious", "injury", "mental", "misc",   "muscular",   "neoplasms",  "nervous",    
-"pregnancy",  "prenatal",   "respiratory",    "skin",   "GENDER", "ADM_ELECTIVE",   
-"ADM_EMERGENCY",  "ADM_NEWBORN",    "ADM_URGENT", "INS_Government", "INS_Medicaid",   
-"INS_Medicare",   "INS_Private",    "INS_Self Pay",   "REL_NOT SPECIFIED",  "REL_RELIGIOUS",  
-"REL_UNOBTAINABLE",   "ETH_ASIAN",  "ETH_BLACK/AFRICAN AMERICAN", "ETH_HISPANIC/LATINO",    
-"ETH_OTHER/UNKNOWN",  "ETH_WHITE",  "AGE_0-3",    "AGE_100-300",    "AGE_12-18",  "AGE_18-36",  
-"AGE_36-54",  "AGE_54-65",  "AGE_65-89",  "MAR_DIVORCED",   "MAR_LIFE PARTNER",   
-"MAR_MARRIED",    "MAR_SEPARATED",  "MAR_SINGLE", "MAR_UNKNOWN (DEFAULT)",  "MAR_WIDOWED",    
-"SUBJECT_ID_y",   "OASIS",  "OASIS_PROB", "elixhauser_vanwalraven", 
-"elixhauser_SID29",   "elixhauser_SID30",   "age_score",
-"MORTALITY"]]
+    df_icu_admission = df_icu_admission[["SUBJECT_ID",  "HADM_ID",    "blood",  
+    "circulatory",    "congenital", "digestive",  "endocrine",  "genitourinary",  
+    "infectious", "injury", "mental", "misc",   "muscular",   "neoplasms",  "nervous",    
+    "pregnancy",  "prenatal",   "respiratory",    "skin",   "GENDER", "ADM_ELECTIVE",   
+    "ADM_EMERGENCY",  "ADM_NEWBORN",    "ADM_URGENT", "INS_Government", "INS_Medicaid",   
+    "INS_Medicare",   "INS_Private",    "INS_Self Pay",   "REL_NOT SPECIFIED",  "REL_RELIGIOUS",  
+    "REL_UNOBTAINABLE",   "ETH_ASIAN",  "ETH_BLACK/AFRICAN AMERICAN", "ETH_HISPANIC/LATINO",    
+    "ETH_OTHER/UNKNOWN",  "ETH_WHITE",  "AGE_0-3",    "AGE_100-300",    "AGE_12-18",  "AGE_18-36",  
+    "AGE_36-54",  "AGE_54-65",  "AGE_65-89",  "MAR_DIVORCED",   "MAR_LIFE PARTNER",   
+    "MAR_MARRIED",    "MAR_SEPARATED",  "MAR_SINGLE", "MAR_UNKNOWN (DEFAULT)",  "MAR_WIDOWED",    
+    "OASIS",  "OASIS_PROB", "elixhauser_vanwalraven", 
+    "elixhauser_SID29",   "elixhauser_SID30",   "age_score",  "MORTALITY"]]
     aggregatedByVisit = aggregatedByVisit.join(df_admission.set_index("HADM_ID"), how = "left")
+    aggregatedByVisit['HADM_ID'] = aggregatedByVisit.index
     
     aggregatedByPatient = pd.DataFrame(aggregatedByVisit.sort_values(['HADM_ID'],ascending=True).groupby('HADM_ID')['featureID'].apply(list))
     aggregatedByPatient['HADM_ID'] = aggregatedByPatient.index
     
     aggregatedByPatient = aggregatedByPatient.join(df_MORTALITY.set_index("HADM_ID"), how = "left")
 
+    aggregatedByICUVisit = pd.DataFrame(df_diagnoses.groupby(['HADM_ID'])['featureID'].apply(list))
 
     aggregatedByICUVisit = aggregatedByICUVisit.join(df_icu_admission.set_index("HADM_ID"), how = "left")
-    
+    aggregatedByICUVisit['HADM_ID'] = aggregatedByICUVisit.index
+
     aggregatedByICUPatient = pd.DataFrame(aggregatedByICUVisit.sort_values(['HADM_ID'],ascending=True).groupby('HADM_ID')['featureID'].apply(list))
     aggregatedByICUPatient['HADM_ID'] = aggregatedByICUPatient.index
     
-    aggregatedByICUPatient = aggregatedByICUPatient.join(df_icu_MORTALITY.set_index("HADM_ID"), how = "left")
+    aggregatedByICUPatient = aggregatedByICUPatient.join(df_icu_mortality.set_index("HADM_ID"), how = "left")
     
     patient_ids = list(aggregatedByPatient.index.values)
     labels = list(aggregatedByPatient['MORTALITY'].values)

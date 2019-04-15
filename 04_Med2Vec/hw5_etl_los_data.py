@@ -55,7 +55,7 @@ def create_train_test_split(path):
     """
     df_LOS = pd.read_csv(os.path.join(path, "Admission_LOS.csv"))
     df_admission = pd.read_csv(os.path.join(path, "Admission_LOS.csv"))
-    df_icu_los = pd.read_csv(os.path.join(path, "ICU_LOS.csv"))
+    df_icu_LOS = pd.read_csv(os.path.join(path, "ICU_LOS.csv"))
     df_icu_admission = pd.read_csv(os.path.join(path, "ICU_LOS.csv"))
     df_diagnoses = pd.read_csv(os.path.join(path, "DIAGNOSES_ICD.csv"))
 
@@ -119,26 +119,25 @@ def create_dataset(path, codemap, transform):
     aggregatedByVisit = pd.DataFrame(df_diagnoses.groupby(['HADM_ID'])['featureID'].apply(list))
 
     df_admission = df_admission[["HADM_ID","blood","circulatory","congenital","digestive","endocrine",
-"genitourinary","infectious","injury","mental","misc","muscular","neoplasms","nervous","pregnancy","prenatal",
-"respiratory","skin","GENDER","ADM_ELECTIVE","ADM_EMERGENCY","ADM_NEWBORN","ADM_URGENT","INS_Government",
-"INS_Medicaid","INS_Medicare","INS_Private","INS_Self Pay","REL_NOT SPECIFIED","REL_RELIGIOUS","REL_UNOBTAINABLE",
-"ETH_ASIAN","ETH_BLACK/AFRICAN AMERICAN","ETH_HISPANIC/LATINO","ETH_OTHER/UNKNOWN","ETH_WHITE","AGE_0-3",
-"AGE_100-300","AGE_12-18","AGE_18-36","AGE_36-54","AGE_54-65","AGE_65-89","MAR_DIVORCED","MAR_LIFE PARTNER",
-"MAR_MARRIED","MAR_SEPARATED","MAR_SINGLE","MAR_UNKNOWN (DEFAULT)","MAR_WIDOWED","LOS"]]
+    "genitourinary","infectious","injury","mental","misc","muscular","neoplasms","nervous","pregnancy","prenatal",
+    "respiratory","skin","GENDER","ADM_ELECTIVE","ADM_EMERGENCY","ADM_NEWBORN","ADM_URGENT","INS_Government",
+    "INS_Medicaid","INS_Medicare","INS_Private","INS_Self Pay","REL_NOT SPECIFIED","REL_RELIGIOUS","REL_UNOBTAINABLE",
+    "ETH_ASIAN","ETH_BLACK/AFRICAN AMERICAN","ETH_HISPANIC/LATINO","ETH_OTHER/UNKNOWN","ETH_WHITE","AGE_0-3",
+    "AGE_100-300","AGE_12-18","AGE_18-36","AGE_36-54","AGE_54-65","AGE_65-89","MAR_DIVORCED","MAR_LIFE PARTNER",
+    "MAR_MARRIED","MAR_SEPARATED","MAR_SINGLE","MAR_UNKNOWN (DEFAULT)","MAR_WIDOWED","LOS"]]
 
-df_icu_admission = df_icu_admission[["SUBJECT_ID_x",  "HADM_ID",    "blood",  
-"circulatory",    "congenital", "digestive",  "endocrine",  "genitourinary",  
-"infectious", "injury", "mental", "misc",   "muscular",   "neoplasms",  "nervous",    
-"pregnancy",  "prenatal",   "respiratory",    "skin",   "GENDER", "ADM_ELECTIVE",   
-"ADM_EMERGENCY",  "ADM_NEWBORN",    "ADM_URGENT", "INS_Government", "INS_Medicaid",   
-"INS_Medicare",   "INS_Private",    "INS_Self Pay",   "REL_NOT SPECIFIED",  "REL_RELIGIOUS",  
-"REL_UNOBTAINABLE",   "ETH_ASIAN",  "ETH_BLACK/AFRICAN AMERICAN", "ETH_HISPANIC/LATINO",    
-"ETH_OTHER/UNKNOWN",  "ETH_WHITE",  "AGE_0-3",    "AGE_100-300",    "AGE_12-18",  "AGE_18-36",  
-"AGE_36-54",  "AGE_54-65",  "AGE_65-89",  "MAR_DIVORCED",   "MAR_LIFE PARTNER",   
-"MAR_MARRIED",    "MAR_SEPARATED",  "MAR_SINGLE", "MAR_UNKNOWN (DEFAULT)",  "MAR_WIDOWED",    
-"SUBJECT_ID_y",   "OASIS",  "OASIS_PROB", "elixhauser_vanwalraven", 
-"elixhauser_SID29",   "elixhauser_SID30",   "age_score",
-"LOS"]]
+    df_icu_admission = df_icu_admission[["SUBJECT_ID",  "HADM_ID",    "blood",  
+    "circulatory",    "congenital", "digestive",  "endocrine",  "genitourinary",  
+    "infectious", "injury", "mental", "misc",   "muscular",   "neoplasms",  "nervous",    
+    "pregnancy",  "prenatal",   "respiratory",    "skin",   "GENDER", "ADM_ELECTIVE",   
+    "ADM_EMERGENCY",  "ADM_NEWBORN",    "ADM_URGENT", "INS_Government", "INS_Medicaid",   
+    "INS_Medicare",   "INS_Private",    "INS_Self Pay",   "REL_NOT SPECIFIED",  "REL_RELIGIOUS",  
+    "REL_UNOBTAINABLE",   "ETH_ASIAN",  "ETH_BLACK/AFRICAN AMERICAN", "ETH_HISPANIC/LATINO",    
+    "ETH_OTHER/UNKNOWN",  "ETH_WHITE",  "AGE_0-3",    "AGE_100-300",    "AGE_12-18",  "AGE_18-36",  
+    "AGE_36-54",  "AGE_54-65",  "AGE_65-89",  "MAR_DIVORCED",   "MAR_LIFE PARTNER",   
+    "MAR_MARRIED",    "MAR_SEPARATED",  "MAR_SINGLE", "MAR_UNKNOWN (DEFAULT)",  "MAR_WIDOWED",    
+    "OASIS",  "OASIS_PROB", "elixhauser_vanwalraven", 
+    "elixhauser_SID29",   "elixhauser_SID30",   "age_score",    "LOS"]]
     aggregatedByVisit = aggregatedByVisit.join(df_admission.set_index("HADM_ID"), how = "left")
     
     aggregatedByPatient = pd.DataFrame(aggregatedByVisit.sort_values(['HADM_ID'],ascending=True).groupby('HADM_ID')['featureID'].apply(list))
@@ -146,6 +145,7 @@ df_icu_admission = df_icu_admission[["SUBJECT_ID_x",  "HADM_ID",    "blood",
     
     aggregatedByPatient = aggregatedByPatient.join(df_LOS.set_index("HADM_ID"), how = "left")
 
+    aggregatedByICUVisit = pd.DataFrame(df_diagnoses.groupby(['HADM_ID'])['featureID'].apply(list))
 
     aggregatedByICUVisit = aggregatedByICUVisit.join(df_icu_admission.set_index("HADM_ID"), how = "left")
     
