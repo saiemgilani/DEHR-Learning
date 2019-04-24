@@ -40,10 +40,11 @@ as elixhauser_vanwalraven
 
 
 ,  -- Below is the 29 component SID score
+   -- Cardiac arrhythmias are not included in SID-29
+
    0 * AIDS +
   -2 * ALCOHOL_ABUSE +
   -2 * BLOOD_LOSS_ANEMIA +
-   -- Cardiac arrhythmias are not included in SID-29
    9 * CONGESTIVE_HEART_FAILURE +
    3 * CHRONIC_PULMONARY +
    9 * COAGULOPATHY +

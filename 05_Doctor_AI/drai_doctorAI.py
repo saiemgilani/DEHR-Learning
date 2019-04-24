@@ -2,7 +2,9 @@
 # Code written by Edward Choi (mp2893@gatech.edu)
 # For bug report, please contact author using the email address
 #################################################################
-
+#python ./05_Doctor_AI/drai_doctorAI.py ./data/output/mortality.seqs 6959 ./data/output/mortality 1070 ./data/output/mortality.3digitICD9.seqs 
+#python ./05_Doctor_AI/drai_doctorAI.py ./DATA/output/mortality.seqs 6959 ./DATA/output/doctorAI 1070 ./DATA/output/mortality.3digitICD9.seqs
+#python ./05_Doctor_AI/drai_doctorAI.py ./DATA/output/mortality.seqs 6959 ./DATA/output/mortality.labels 1070 ./DATA/output/mortality.3digitICD9.seqs
 import sys, random
 import numpy as np
 import pickle
@@ -246,10 +248,10 @@ def padMatrixWithoutTime(seqs, labels, options):
 
 def load_data(seqFile, labelFile, timeFile):
 	train_set_x = pickle.load(open(seqFile+'.train', 'rb'))
-	valid_set_x = pickle.load(open(seqFile+'.valid', 'rb'))
+	valid_set_x = pickle.load(open(seqFile+'.validation', 'rb'))
 	test_set_x = pickle.load(open(seqFile+'.test', 'rb'))
 	train_set_y = pickle.load(open(labelFile+'.train', 'rb'))
-	valid_set_y = pickle.load(open(labelFile+'.valid', 'rb'))
+	valid_set_y = pickle.load(open(labelFile+'.validation', 'rb'))
 	test_set_y = pickle.load(open(labelFile+'.test', 'rb'))
 	train_set_t = None
 	valid_set_t = None
@@ -257,7 +259,7 @@ def load_data(seqFile, labelFile, timeFile):
 
 	if len(timeFile) > 0:
 		train_set_t = pickle.load(open(timeFile+'.train', 'rb'))
-		valid_set_t = pickle.load(open(timeFile+'.valid', 'rb'))
+		valid_set_t = pickle.load(open(timeFile+'.validation', 'rb'))
 		test_set_t = pickle.load(open(timeFile+'.test', 'rb'))
 
 	'''For debugging purposes
@@ -328,7 +330,7 @@ def calculate_auc(test_model, dataset, options):
 	n_batches = int(np.ceil(float(len(dataset[0])) / float(batchSize)))
 	aucSum = 0.0
 	dataCount = 0.0
-	for index in xrange(n_batches):
+	for index in range(n_batches):
 		batchX = dataset[0][index*batchSize:(index+1)*batchSize]
 		batchY = dataset[1][index*batchSize:(index+1)*batchSize]
 		if predictTime:
@@ -366,7 +368,7 @@ def train_doctorAI(
 	L2_time=0.001,
 	dropout_rate=0.5,
 	logEps=1e-8,
-	verbose=False
+	verbose=True
 ):
 	options = locals().copy()
 
@@ -382,7 +384,7 @@ def train_doctorAI(
 	f_grad_shared = None
 	f_update = None
 	if predictTime and embFineTune:
-		print( 'predicting duration, fine-tuning code representations'
+		print( 'predicting duration, fine-tuning code representations')
 		use_noise, x, y, t, t_label, mask, lengths, cost =  build_model(tparams, options)
 		grads = T.grad(cost, wrt=tparams.values())
 		f_grad_shared, f_update = adadelta(tparams, grads, x, y, mask, lengths, cost, options, t, t_label)
@@ -406,7 +408,7 @@ def train_doctorAI(
 	elif not useTime and embFineTune:
 		print( 'not using duration information, fine-tuning code representations')
 		use_noise, x, y, mask, lengths, cost =  build_model(tparams, options)
-		grads = T.grad(cost, wrt=tparams.values())
+		grads = T.grad(cost, wrt=list(tparams.values()))
 		f_grad_shared, f_update = adadelta(tparams, grads, x, y, mask, lengths, cost, options)
 	elif useTime and not embFineTune:
 		print( 'not using duration information, not fine-tuning code representations')
@@ -428,7 +430,7 @@ def train_doctorAI(
 	bestValidEpoch = 0
 	testCrossEntropy = 0.0
 	print( 'Optimization start !!')
-	for epoch in xrange(max_epochs):
+	for epoch in range(max_epochs):
 		iteration = 0
 		costVector = []
 		for index in random.sample(range(n_batches), n_batches):
@@ -448,7 +450,7 @@ def train_doctorAI(
 				cost = f_grad_shared(x, y, mask, lengths)
 			costVector.append(cost)
 			f_update()
-			if (iteration % 10 == 0) and verbose: print( 'epoch:%d, iteration:%d/%d, cost:%f' % (epoch, iteration, n_batches, cost)
+			if (iteration % 10 == 0) and verbose: print( 'epoch:%d, iteration:%d/%d, cost:%f' % (epoch, iteration, n_batches, cost))
 			iteration += 1
 
 		print( 'epoch:%d, mean_cost:%f' % (epoch, np.mean(costVector)))
